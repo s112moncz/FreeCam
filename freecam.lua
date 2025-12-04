@@ -6,98 +6,122 @@ local onMobile = not UIS.KeyboardEnabled
 local keysDown = {}
 local rotating = false
 
+-- Počkej na načtení hry
 if not game:IsLoaded() then 
     game.Loaded:Wait() 
 end
 
--- GUI Creation
-local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+-- Počkej na hráče
+local player = game.Players.LocalPlayer
+while not player do
+    wait()
+    player = game.Players.LocalPlayer
+end
+
+-- Vytvoření GUI
+local PlayerGui = player:WaitForChild("PlayerGui")
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FreeCamGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Main Container
+-- Hlavní kontejner
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 150, 0, 50)
-MainFrame.Position = UDim2.new(0.5, -75, 0.1, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.BackgroundTransparency = 0.3
+MainFrame.Size = UDim2.new(0, 180, 0, 60)
+MainFrame.Position = UDim2.new(0.5, -90, 0.05, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BackgroundTransparency = 0.2
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 
--- Toggle Switch Frame
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- Frame pro přepínač
 local ToggleFrame = Instance.new("Frame")
 ToggleFrame.Name = "ToggleFrame"
-ToggleFrame.Size = UDim2.new(1, 0, 0, 50)
+ToggleFrame.Size = UDim2.new(1, 0, 1, 0)
 ToggleFrame.BackgroundTransparency = 1
 ToggleFrame.Visible = true
 
--- Toggle Switch
+-- Tlačítko pro přepínání
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "ToggleButton"
-ToggleButton.Size = UDim2.new(0, 100, 0, 40)
-ToggleButton.Position = UDim2.new(0.5, -50, 0.5, -20)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+ToggleButton.Size = UDim2.new(0, 140, 0, 40)
+ToggleButton.Position = UDim2.new(0.5, -70, 0.5, -20)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 ToggleButton.Text = "FreeCam: OFF"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.TextSize = 14
-ToggleButton.BorderSizePixel = 0
+ToggleButton.AutoButtonColor = false
 
--- Close Button
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 6)
+ButtonCorner.Parent = ToggleButton
+
+-- Tlačítko pro zavření
 local CloseButton = Instance.new("TextButton")
 CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
 CloseButton.Position = UDim2.new(1, -35, 0, 5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.white
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.TextSize = 16
-CloseButton.BorderSizePixel = 0
+CloseButton.AutoButtonColor = false
 
--- Loading Indicator Frame
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 15)
+CloseCorner.Parent = CloseButton
+
+-- Frame pro loading
 local LoadingFrame = Instance.new("Frame")
 LoadingFrame.Name = "LoadingFrame"
-LoadingFrame.Size = UDim2.new(1, 0, 0, 50)
+LoadingFrame.Size = UDim2.new(1, 0, 1, 0)
 LoadingFrame.BackgroundTransparency = 1
 LoadingFrame.Visible = false
 
--- Loading Text
+-- Loading text
 local LoadingText = Instance.new("TextLabel")
 LoadingText.Name = "LoadingText"
-LoadingText.Size = UDim2.new(1, 0, 1, 0)
+LoadingText.Size = UDim2.new(1, -20, 1, 0)
+LoadingText.Position = UDim2.new(0, 10, 0, 0)
 LoadingText.BackgroundTransparency = 1
-LoadingText.Text = "Loading Sima FreeCam"
+LoadingText.Text = "Loading Sima FreeCam..."
 LoadingText.TextColor3 = Color3.fromRGB(100, 200, 255)
 LoadingText.Font = Enum.Font.GothamBold
 LoadingText.TextSize = 16
-LoadingText.Visible = true
+LoadingText.TextXAlignment = Enum.TextXAlignment.Left
 
--- Loading Animation (rotating dots)
+-- Animované tečky
 local DotsFrame = Instance.new("Frame")
 DotsFrame.Name = "DotsFrame"
-DotsFrame.Size = UDim2.new(0, 60, 0, 20)
-DotsFrame.Position = UDim2.new(0.5, -30, 1, 10)
+DotsFrame.Size = UDim2.new(0, 40, 0, 10)
+DotsFrame.Position = UDim2.new(1, -50, 0.5, -5)
 DotsFrame.BackgroundTransparency = 1
 
 local dots = {}
 for i = 1, 3 do
-    local dot = Instance.new("TextLabel")
+    local dot = Instance.new("Frame")
     dot.Name = "Dot"..i
-    dot.Size = UDim2.new(0, 10, 0, 10)
-    dot.Position = UDim2.new(0, (i-1)*20, 0, 0)
+    dot.Size = UDim2.new(0, 8, 0, 8)
+    dot.Position = UDim2.new(0, (i-1)*12, 0, 0)
     dot.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
-    dot.BackgroundTransparency = 0.5
     dot.BorderSizePixel = 0
-    dot.Text = ""
+    
+    local dotCorner = Instance.new("UICorner")
+    dotCorner.CornerRadius = UDim.new(0, 4)
+    dotCorner.Parent = dot
+    
     table.insert(dots, dot)
     dot.Parent = DotsFrame
 end
 
--- Assemble GUI
+-- Sestavení GUI
 DotsFrame.Parent = LoadingFrame
 LoadingText.Parent = LoadingFrame
 CloseButton.Parent = ToggleFrame
@@ -107,86 +131,145 @@ LoadingFrame.Parent = MainFrame
 MainFrame.Parent = ScreenGui
 ScreenGui.Parent = PlayerGui
 
--- Loading Animation Function
+-- Animace loading teček
+local loadingAnimationActive = false
+
 local function animateLoading()
-    while LoadingFrame.Visible do
+    if loadingAnimationActive then return end
+    loadingAnimationActive = true
+    
+    while LoadingFrame.Visible and LoadingFrame.Parent do
         for i, dot in ipairs(dots) do
-            local tween = TweenService:Create(dot, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                BackgroundTransparency = 0.2
+            local tween = TweenService:Create(dot, TweenInfo.new(0.4), {
+                BackgroundTransparency = 0,
+                Size = UDim2.new(0, 10, 0, 10)
             })
             tween:Play()
-            tween.Completed:Wait()
+            wait(0.2)
             
-            local tween2 = TweenService:Create(dot, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                BackgroundTransparency = 0.5
+            local tween2 = TweenService:Create(dot, TweenInfo.new(0.4), {
+                BackgroundTransparency = 0.5,
+                Size = UDim2.new(0, 8, 0, 8)
             })
             tween2:Play()
-            task.wait(0.1)
         end
+        wait(0.2)
+    end
+    
+    loadingAnimationActive = false
+end
+
+-- Zobrazení loading screenu
+local function showLoading()
+    if not LoadingFrame or not LoadingFrame.Parent then return end
+    
+    ToggleFrame.Visible = false
+    LoadingFrame.Visible = true
+    
+    -- Spustit animaci
+    task.spawn(animateLoading)
+    
+    -- Simulace načítání
+    wait(2)
+    
+    -- Skrýt loading a ukázat toggle
+    if LoadingFrame and LoadingFrame.Parent then
+        LoadingFrame.Visible = false
+        ToggleFrame.Visible = true
     end
 end
 
--- Show Loading Function
-local function showLoading()
-    ToggleFrame.Visible = false
-    LoadingFrame.Visible = true
-    LoadingText.Text = "Loading Sima FreeCam"
-    
-    -- Start loading animation
-    task.spawn(animateLoading)
-    
-    -- Simulate loading time
-    task.wait(1.5)
-    
-    -- Hide loading and show toggle
-    LoadingFrame.Visible = false
-    ToggleFrame.Visible = true
-end
-
--- Close button functionality
+-- Funkce pro tlačítko zavření
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Freecam + blokování pohybu postavy
-local freecamEnabled = false
-local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
+-- Efekty při hoveru
+ToggleButton.MouseEnter:Connect(function()
+    if ToggleButton then
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    end
+end)
 
-local savedWalkSpeed = humanoid.WalkSpeed
-local savedJumpPower = humanoid.JumpPower
+ToggleButton.MouseLeave:Connect(function()
+    if ToggleButton then
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
+end)
+
+CloseButton.MouseEnter:Connect(function()
+    if CloseButton then
+        CloseButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    end
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    if CloseButton then
+        CloseButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    end
+end)
+
+-- Freecam proměnné
+local freecamEnabled = false
+local char = player.Character
+local humanoid = char and char:FindFirstChild("Humanoid")
+
+local savedWalkSpeed = 16
+local savedJumpPower = 50
 
 local function enableFreecam()
+    if freecamEnabled then return end
+    
     freecamEnabled = true
     cam.CameraType = Enum.CameraType.Scriptable
-
-    -- Uložení hodnot
-    savedWalkSpeed = humanoid.WalkSpeed
-    savedJumpPower = humanoid.JumpPower
-
-    -- Zastavení postavy
-    humanoid.WalkSpeed = 0
-    humanoid.JumpPower = 0
+    
+    -- Získat aktuální postavu
+    char = player.Character
+    if char then
+        humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            -- Uložení hodnot
+            savedWalkSpeed = humanoid.WalkSpeed
+            savedJumpPower = humanoid.JumpPower
+            
+            -- Zastavení postavy
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+        end
+    end
     
     -- Update GUI
-    ToggleButton.Text = "FreeCam: ON"
-    ToggleButton.TextColor3 = Color3.fromRGB(100, 255, 100)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 100, 60)
+    if ToggleButton then
+        ToggleButton.Text = "FreeCam: ON"
+        ToggleButton.TextColor3 = Color3.fromRGB(100, 255, 100)
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 80, 40)
+    end
 end
 
 local function disableFreecam()
+    if not freecamEnabled then return end
+    
     freecamEnabled = false
     cam.CameraType = Enum.CameraType.Custom
-
+    
     -- Obnovení pohybu
-    humanoid.WalkSpeed = savedWalkSpeed
-    humanoid.JumpPower = savedJumpPower
+    if char and humanoid and humanoid.Parent then
+        humanoid.WalkSpeed = savedWalkSpeed
+        humanoid.JumpPower = savedJumpPower
+    end
+    
+    -- Resetování ovládání
+    rotating = false
+    for key, _ in pairs(keysDown) do
+        keysDown[key] = false
+    end
     
     -- Update GUI
-    ToggleButton.Text = "FreeCam: OFF"
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    if ToggleButton then
+        ToggleButton.Text = "FreeCam: OFF"
+        ToggleButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end
 end
 
 local function toggleFreecam()
@@ -197,161 +280,213 @@ local function toggleFreecam()
     end
 end
 
--- Toggle button functionality
+-- Tlačítko pro přepínání
 ToggleButton.MouseButton1Click:Connect(function()
     toggleFreecam()
 end)
 
+-- Nastavení freecam
 local speed = 3
 local sens = 0.3
-
-speed /= 10
-if onMobile then sens *= 2 end
+speed = speed / 10
+if onMobile then sens = sens * 2 end
 
 local touchPos
 
+-- Hlavní render loop
 local function renderStepped()
     if not freecamEnabled then return end
-
+    
+    -- Otáčení kamery
     if rotating then
         local delta = UIS:GetMouseDelta()
         local cf = cam.CFrame
+        
+        -- Omezení vertikálního otáčení
         local yAngle = cf:ToEulerAngles(Enum.RotationOrder.YZX)
         local newAmount = math.deg(yAngle) + delta.Y
-
-        if newAmount > 65 or newAmount < -65 then
+        
+        if newAmount > 80 or newAmount < -80 then
             if not (yAngle < 0 and delta.Y < 0) and not (yAngle > 0 and delta.Y > 0) then
                 delta = Vector2.new(delta.X, 0)
             end
         end
-
-        cf *= CFrame.Angles(-math.rad(delta.Y), 0, 0)
-        cf = CFrame.Angles(0, -math.rad(delta.X), 0) * (cf - cf.Position) + cf.Position
-        cf = CFrame.lookAt(cf.Position, cf.Position + cf.LookVector)
-
-        if delta ~= Vector2.new(0, 0) then
-            cam.CFrame = cam.CFrame:Lerp(cf, sens)
-        end
-
+        
+        -- Aplikace rotace
+        cf = cf * CFrame.Angles(-math.rad(delta.Y) * sens, 0, 0)
+        cf = CFrame.Angles(0, -math.rad(delta.X) * sens, 0) * (cf - cf.Position) + cf.Position
+        
+        cam.CFrame = cf
         UIS.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
     else
         UIS.MouseBehavior = Enum.MouseBehavior.Default
     end
-
-    if keysDown["Enum.KeyCode.W"] then
-        cam.CFrame *= CFrame.new(0, 0, -speed)
+    
+    -- Pohyb kamery
+    if keysDown["W"] then
+        cam.CFrame = cam.CFrame + cam.CFrame.LookVector * speed
     end
-    if keysDown["Enum.KeyCode.A"] then
-        cam.CFrame *= CFrame.new(-speed, 0, 0)
+    if keysDown["S"] then
+        cam.CFrame = cam.CFrame - cam.CFrame.LookVector * speed
     end
-    if keysDown["Enum.KeyCode.S"] then
-        cam.CFrame *= CFrame.new(0, 0, speed)
+    if keysDown["A"] then
+        cam.CFrame = cam.CFrame - cam.CFrame.RightVector * speed
     end
-    if keysDown["Enum.KeyCode.D"] then
-        cam.CFrame *= CFrame.new(speed, 0, 0)
+    if keysDown["D"] then
+        cam.CFrame = cam.CFrame + cam.CFrame.RightVector * speed
+    end
+    if keysDown["Space"] then
+        cam.CFrame = cam.CFrame + Vector3.new(0, speed, 0)
+    end
+    if keysDown["LeftControl"] or keysDown["Q"] then
+        cam.CFrame = cam.CFrame - Vector3.new(0, speed, 0)
     end
 end
 
+-- Připojení render loop
 RS.RenderStepped:Connect(renderStepped)
 
-local validKeys = {
-    "Enum.KeyCode.W",
-    "Enum.KeyCode.A",
-    "Enum.KeyCode.S",
-    "Enum.KeyCode.D"
-}
-
-UIS.InputBegan:Connect(function(Input)
-    -- TOGGLE freecam na O
-    if Input.KeyCode == Enum.KeyCode.O then
+-- Ovládání kláves
+UIS.InputBegan:Connect(function(input)
+    -- Přepínání na O
+    if input.KeyCode == Enum.KeyCode.O then
         toggleFreecam()
     end
-
-    for i, key in pairs(validKeys) do
-        if key == tostring(Input.KeyCode) then
-            keysDown[key] = true
+    
+    -- Klávesy pro pohyb
+    if freecamEnabled then
+        if input.KeyCode == Enum.KeyCode.W then
+            keysDown["W"] = true
+        elseif input.KeyCode == Enum.KeyCode.A then
+            keysDown["A"] = true
+        elseif input.KeyCode == Enum.KeyCode.S then
+            keysDown["S"] = true
+        elseif input.KeyCode == Enum.KeyCode.D then
+            keysDown["D"] = true
+        elseif input.KeyCode == Enum.KeyCode.Space then
+            keysDown["Space"] = true
+        elseif input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.Q then
+            keysDown["Q"] = true
         end
     end
-
-    if not freecamEnabled then return end
-
-    if Input.UserInputType == Enum.UserInputType.MouseButton2
-        or (Input.UserInputType == Enum.UserInputType.Touch and UIS:GetMouseLocation().X > (cam.ViewportSize.X / 2)) then
+    
+    -- Otáčení myší
+    if freecamEnabled and input.UserInputType == Enum.UserInputType.MouseButton2 then
         rotating = true
     end
-
-    if Input.UserInputType == Enum.UserInputType.Touch then
-        if Input.Position.X < cam.ViewportSize.X / 2 then
-            touchPos = Input.Position
+    
+    -- Dotykové ovládání
+    if freecamEnabled and input.UserInputType == Enum.UserInputType.Touch then
+        local mouseLoc = UIS:GetMouseLocation()
+        if mouseLoc.X > (cam.ViewportSize.X / 2) then
+            rotating = true
+        else
+            touchPos = input.Position
         end
     end
 end)
 
-UIS.InputEnded:Connect(function(Input)
-    for key, v in pairs(keysDown) do
-        if key == tostring(Input.KeyCode) then
-            keysDown[key] = false
-        end
+UIS.InputEnded:Connect(function(input)
+    -- Klávesy pro pohyb
+    if input.KeyCode == Enum.KeyCode.W then
+        keysDown["W"] = false
+    elseif input.KeyCode == Enum.KeyCode.A then
+        keysDown["A"] = false
+    elseif input.KeyCode == Enum.KeyCode.S then
+        keysDown["S"] = false
+    elseif input.KeyCode == Enum.KeyCode.D then
+        keysDown["D"] = false
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        keysDown["Space"] = false
+    elseif input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.Q then
+        keysDown["Q"] = false
     end
-
-    if not freecamEnabled then return end
-
-    if Input.UserInputType == Enum.UserInputType.MouseButton2
-        or (Input.UserInputType == Enum.UserInputType.Touch and UIS:GetMouseLocation().X > (cam.ViewportSize.X / 2)) then
+    
+    -- Otáčení myší
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
         rotating = false
     end
-
-    if Input.UserInputType == Enum.UserInputType.Touch and touchPos then
-        if Input.Position.X < cam.ViewportSize.X / 2 then
-            touchPos = nil
-            keysDown["Enum.KeyCode.W"] = false
-            keysDown["Enum.KeyCode.A"] = false
-            keysDown["Enum.KeyCode.S"] = false
-            keysDown["Enum.KeyCode.D"] = false
-        end
+    
+    -- Dotykové ovládání
+    if input.UserInputType == Enum.UserInputType.Touch then
+        rotating = false
+        touchPos = nil
     end
 end)
 
-UIS.TouchMoved:Connect(function(input)
-    if not freecamEnabled then return end
-
-    if touchPos then
+-- Dotykový pohyb
+if onMobile then
+    UIS.TouchMoved:Connect(function(input)
+        if not freecamEnabled or not touchPos then return end
+        
         if input.Position.X < cam.ViewportSize.X / 2 then
-            if input.Position.Y < touchPos.Y then
-                keysDown["Enum.KeyCode.W"] = true
-                keysDown["Enum.KeyCode.S"] = false
+            local delta = (input.Position - touchPos)
+            
+            -- Pohyb vpřed/vzad
+            if delta.Y < -20 then
+                keysDown["W"] = true
+                keysDown["S"] = false
+            elseif delta.Y > 20 then
+                keysDown["W"] = false
+                keysDown["S"] = true
             else
-                keysDown["Enum.KeyCode.W"] = false
-                keysDown["Enum.KeyCode.S"] = true
+                keysDown["W"] = false
+                keysDown["S"] = false
             end
-
-            if input.Position.X < (touchPos.X - 15) then
-                keysDown["Enum.KeyCode.A"] = true
-                keysDown["Enum.KeyCode.D"] = false
-            elseif input.Position.X > (touchPos.X + 15) then
-                keysDown["Enum.KeyCode.A"] = false
-                keysDown["Enum.KeyCode.D"] = true
+            
+            -- Pohyb do stran
+            if delta.X < -20 then
+                keysDown["A"] = true
+                keysDown["D"] = false
+            elseif delta.X > 20 then
+                keysDown["A"] = false
+                keysDown["D"] = true
             else
-                keysDown["Enum.KeyCode.A"] = false
-                keysDown["Enum.KeyCode.D"] = false
+                keysDown["A"] = false
+                keysDown["D"] = false
             end
         end
-    end
-end)
+    end)
+end
 
--- Show loading on start
-showLoading()
-
--- Reconnect character if respawned
+-- Zpracování respawnu postavy
 player.CharacterAdded:Connect(function(newChar)
     char = newChar
-    humanoid = newChar:WaitForChild("Humanoid")
+    wait(1) -- Počkat na načtení postavy
     
     if freecamEnabled then
-        -- Re-apply freecam settings
-        savedWalkSpeed = humanoid.WalkSpeed
-        savedJumpPower = humanoid.JumpPower
-        humanoid.WalkSpeed = 0
-        humanoid.JumpPower = 0
+        humanoid = newChar:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            -- Znovu aplikovat freecam nastavení
+            savedWalkSpeed = humanoid.WalkSpeed
+            savedJumpPower = humanoid.JumpPower
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+        end
     end
 end)
+
+-- Zobrazit loading při startu
+showLoading()
+
+-- Přidání klávesy E pro rychlejší pohyb
+UIS.InputBegan:Connect(function(input)
+    if freecamEnabled and input.KeyCode == Enum.KeyCode.E then
+        speed = 6 / 10
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.E then
+        speed = 3 / 10
+    end
+end)
+
+print("Sima FreeCam loaded successfully!")
+print("Controls:")
+print("- Click button or press O to toggle FreeCam")
+print("- WASD: Move camera")
+print("- Space/Q: Move up/down")
+print("- Right mouse button: Look around")
+print("- E: Speed boost")
+print("- X button: Close GUI")
