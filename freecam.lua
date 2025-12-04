@@ -99,7 +99,7 @@ local InfoText = Instance.new("TextLabel")
 InfoText.Size = UDim2.new(1, -20, 1, -40)
 InfoText.Position = UDim2.new(0, 10, 0, 35)
 InfoText.BackgroundTransparency = 1
-InfoText.Text = "Sima FreeCam v1.0\n\n🚀 How to Use:\nPress O key to toggle FreeCam\n\n🎮 Controls:\n• WASD - Move camera\n• Right Click - Look around\n• Space - Move up\n• Q or Ctrl - Move down\n• E - Speed boost (hold)\n\n📱 Mobile Controls:\n• Right side - Look around (touch)\n• Left side - Move (touch & drag)\n\n🔧 Features:\n• Character movement locked\n• Smooth camera movement\n• Mobile touch support\n• Voidware style GUI\n\n💡 Tip: Press O anytime to toggle!"
+InfoText.Text = "Sima FreeCam v1.0\n\n🚀 How to Use:\nPress O key to toggle FreeCam\n\n🎮 Controls:\n• WASD - Move camera\n• Right Click - Look around\n• Space - Move up\n• Q or Ctrl - Move down\n• E - Speed boost (hold)\n\n📱 Mobile Controls:\n• Right side - Look around (touch)\n• Left side - Move (touch & drag)\n\n🔧 Features:\n• Character movement locked\n• Smooth camera movement\n• Mobile touch support"
 InfoText.TextColor3 = VOIDWARE_COLORS.Text
 InfoText.Font = Enum.Font.Gotham
 InfoText.TextSize = 13
@@ -419,3 +419,4 @@ updateStatus()
 print("✅ Sima FreeCam loaded with Voidware GUI!")
 print("🎯 Press O key to toggle FreeCam")
 print("❌ Click X to close GUI")
+
