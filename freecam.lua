@@ -15,8 +15,6 @@ local VOIDWARE_COLORS = {
     Text = Color3.fromRGB(220, 220, 220),
     Accent = Color3.fromRGB(100, 150, 255),
     Close = Color3.fromRGB(255, 80, 80),
-    ToggleOff = Color3.fromRGB(60, 60, 70),
-    ToggleOn = Color3.fromRGB(80, 180, 80),
     Loading = Color3.fromRGB(100, 200, 255)
 }
 
@@ -29,8 +27,8 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Hlavní okno
 local MainWindow = Instance.new("Frame")
-MainWindow.Size = UDim2.new(0, 350, 0, 450)
-MainWindow.Position = UDim2.new(0.5, -175, 0.5, -225)
+MainWindow.Size = UDim2.new(0, 350, 0, 400)
+MainWindow.Position = UDim2.new(0.5, -175, 0.5, -200)
 MainWindow.BackgroundColor3 = VOIDWARE_COLORS.Background
 MainWindow.BorderSizePixel = 0
 
@@ -75,7 +73,7 @@ CloseCorner.Parent = CloseButton
 
 -- Sekce Information
 local InfoSection = Instance.new("Frame")
-InfoSection.Size = UDim2.new(1, -20, 0, 200)
+InfoSection.Size = UDim2.new(1, -20, 0, 320)
 InfoSection.Position = UDim2.new(0, 10, 0, 50)
 InfoSection.BackgroundColor3 = VOIDWARE_COLORS.Section
 InfoSection.BorderSizePixel = 0
@@ -101,7 +99,7 @@ local InfoText = Instance.new("TextLabel")
 InfoText.Size = UDim2.new(1, -20, 1, -40)
 InfoText.Position = UDim2.new(0, 10, 0, 35)
 InfoText.BackgroundTransparency = 1
-InfoText.Text = "Sima FreeCam v1.0\n\nControls:\n• O - Toggle FreeCam\n• WASD - Move camera\n• Right Click - Look around\n• Space/Q - Move up/down\n\nMobile Controls:\n• Right side - Look around\n• Left side - Move (touch & drag)"
+InfoText.Text = "Sima FreeCam v1.0\n\n🚀 How to Use:\nPress O key to toggle FreeCam\n\n🎮 Controls:\n• WASD - Move camera\n• Right Click - Look around\n• Space - Move up\n• Q or Ctrl - Move down\n• E - Speed boost (hold)\n\n📱 Mobile Controls:\n• Right side - Look around (touch)\n• Left side - Move (touch & drag)\n\n🔧 Features:\n• Character movement locked\n• Smooth camera movement\n• Mobile touch support\n• Voidware style GUI\n\n💡 Tip: Press O anytime to toggle!"
 InfoText.TextColor3 = VOIDWARE_COLORS.Text
 InfoText.Font = Enum.Font.Gotham
 InfoText.TextSize = 13
@@ -109,43 +107,16 @@ InfoText.TextXAlignment = Enum.TextXAlignment.Left
 InfoText.TextYAlignment = Enum.TextYAlignment.Top
 InfoText.TextWrapped = true
 
--- Toggle button pro FreeCam
-local ToggleSection = Instance.new("Frame")
-ToggleSection.Size = UDim2.new(1, -20, 0, 100)
-ToggleSection.Position = UDim2.new(0, 10, 0, 260)
-ToggleSection.BackgroundColor3 = VOIDWARE_COLORS.Section
-ToggleSection.BorderSizePixel = 0
-
-local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 6)
-ToggleCorner.Parent = ToggleSection
-
-local ToggleTitle = Instance.new("TextLabel")
-ToggleTitle.Size = UDim2.new(1, 0, 0, 30)
-ToggleTitle.BackgroundColor3 = VOIDWARE_COLORS.Accent
-ToggleTitle.Text = "FreeCam Control"
-ToggleTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleTitle.Font = Enum.Font.GothamBold
-ToggleTitle.TextSize = 14
-ToggleTitle.BorderSizePixel = 0
-
-local ToggleTitleCorner = Instance.new("UICorner")
-ToggleTitleCorner.CornerRadius = UDim.new(0, 6)
-ToggleTitleCorner.Parent = ToggleTitle
-
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 200, 0, 40)
-ToggleButton.Position = UDim2.new(0.5, -100, 0.5, -20)
-ToggleButton.BackgroundColor3 = VOIDWARE_COLORS.ToggleOff
-ToggleButton.Text = "FreeCam: OFF"
-ToggleButton.TextColor3 = VOIDWARE_COLORS.Text
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 16
-ToggleButton.BorderSizePixel = 0
-
-local ToggleBtnCorner = Instance.new("UICorner")
-ToggleBtnCorner.CornerRadius = UDim.new(0, 6)
-ToggleBtnCorner.Parent = ToggleButton
+-- Status indicator
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, -20, 0, 30)
+StatusLabel.Position = UDim2.new(0, 10, 1, -40)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "Status: FreeCam OFF (Press O)"
+StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+StatusLabel.Font = Enum.Font.GothamBold
+StatusLabel.TextSize = 12
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Loading indicator
 local LoadingOverlay = Instance.new("Frame")
@@ -164,11 +135,9 @@ LoadingText.Font = Enum.Font.GothamBold
 LoadingText.TextSize = 18
 
 -- Sestavení GUI
+StatusLabel.Parent = InfoSection
 LoadingText.Parent = LoadingOverlay
 LoadingOverlay.Parent = MainWindow
-ToggleTitle.Parent = ToggleSection
-ToggleButton.Parent = ToggleSection
-ToggleSection.Parent = MainWindow
 SectionTitle.Parent = InfoSection
 InfoText.Parent = InfoSection
 InfoSection.Parent = MainWindow
@@ -185,6 +154,27 @@ task.delay(2, function()
     end
 end)
 
+-- Tlačítko zavření
+CloseButton.MouseButton1Click:Connect(function()
+    if freecamEnabled then
+        disableFreecam()
+    end
+    ScreenGui:Destroy()
+end)
+
+-- Efekty hoveru pro close button
+CloseButton.MouseEnter:Connect(function()
+    if CloseButton then
+        CloseButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    if CloseButton then
+        CloseButton.BackgroundColor3 = VOIDWARE_COLORS.Close
+    end
+end)
+
 -- Freecam + blokování pohybu postavy
 local freecamEnabled = false
 local char = player.Character or player.CharacterAdded:Wait()
@@ -192,6 +182,30 @@ local humanoid = char:WaitForChild("Humanoid")
 
 local savedWalkSpeed = humanoid.WalkSpeed
 local savedJumpPower = humanoid.JumpPower
+
+-- Rozšířené klávesy pro pohyb nahoru/dolů a speed boost
+local extendedKeys = {
+    "Enum.KeyCode.W",
+    "Enum.KeyCode.A",
+    "Enum.KeyCode.S",
+    "Enum.KeyCode.D",
+    "Enum.KeyCode.Space",
+    "Enum.KeyCode.Q",
+    "Enum.KeyCode.E",
+    "Enum.KeyCode.LeftControl"
+}
+
+local function updateStatus()
+    if StatusLabel then
+        if freecamEnabled then
+            StatusLabel.Text = "Status: FreeCam ON (Press O to disable)"
+            StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        else
+            StatusLabel.Text = "Status: FreeCam OFF (Press O to enable)"
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    end
+end
 
 local function enableFreecam()
 	freecamEnabled = true
@@ -205,10 +219,8 @@ local function enableFreecam()
 	humanoid.WalkSpeed = 0
 	humanoid.JumpPower = 0
     
-    -- Update GUI
-    ToggleButton.Text = "FreeCam: ON"
-    ToggleButton.BackgroundColor3 = VOIDWARE_COLORS.ToggleOn
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    -- Update status
+    updateStatus()
 end
 
 local function disableFreecam()
@@ -219,10 +231,8 @@ local function disableFreecam()
 	humanoid.WalkSpeed = savedWalkSpeed
 	humanoid.JumpPower = savedJumpPower
     
-    -- Update GUI
-    ToggleButton.Text = "FreeCam: OFF"
-    ToggleButton.BackgroundColor3 = VOIDWARE_COLORS.ToggleOff
-    ToggleButton.TextColor3 = VOIDWARE_COLORS.Text
+    -- Update status
+    updateStatus()
 end
 
 local function toggleFreecam()
@@ -233,52 +243,11 @@ local function toggleFreecam()
 	end
 end
 
--- Tlačítko přepínače
-ToggleButton.MouseButton1Click:Connect(function()
-    toggleFreecam()
-end)
-
--- Tlačítko zavření
-CloseButton.MouseButton1Click:Connect(function()
-    if freecamEnabled then
-        disableFreecam()
-    end
-    ScreenGui:Destroy()
-end)
-
--- Efekty hoveru
-ToggleButton.MouseEnter:Connect(function()
-    if ToggleButton then
-        ToggleButton.BackgroundColor3 = freecamEnabled and 
-            Color3.fromRGB(100, 200, 100) or 
-            Color3.fromRGB(80, 80, 90)
-    end
-end)
-
-ToggleButton.MouseLeave:Connect(function()
-    if ToggleButton then
-        ToggleButton.BackgroundColor3 = freecamEnabled and 
-            VOIDWARE_COLORS.ToggleOn or 
-            VOIDWARE_COLORS.ToggleOff
-    end
-end)
-
-CloseButton.MouseEnter:Connect(function()
-    if CloseButton then
-        CloseButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-    end
-end)
-
-CloseButton.MouseLeave:Connect(function()
-    if CloseButton then
-        CloseButton.BackgroundColor3 = VOIDWARE_COLORS.Close
-    end
-end)
-
 local speed = 3
 local sens = 0.3
+local baseSpeed = speed / 10
+local currentSpeed = baseSpeed
 
-speed /= 10
 if onMobile then sens *= 2 end
 
 local touchPos
@@ -311,28 +280,29 @@ local function renderStepped()
 		UIS.MouseBehavior = Enum.MouseBehavior.Default
 	end
 
+	-- Pohyb s aktuální rychlostí
 	if keysDown["Enum.KeyCode.W"] then
-		cam.CFrame *= CFrame.new(0, 0, -speed)
+		cam.CFrame *= CFrame.new(0, 0, -currentSpeed)
 	end
 	if keysDown["Enum.KeyCode.A"] then
-		cam.CFrame *= CFrame.new(-speed, 0, 0)
+		cam.CFrame *= CFrame.new(-currentSpeed, 0, 0)
 	end
 	if keysDown["Enum.KeyCode.S"] then
-		cam.CFrame *= CFrame.new(0, 0, speed)
+		cam.CFrame *= CFrame.new(0, 0, currentSpeed)
 	end
 	if keysDown["Enum.KeyCode.D"] then
-		cam.CFrame *= CFrame.new(speed, 0, 0)
+		cam.CFrame *= CFrame.new(currentSpeed, 0, 0)
+	end
+	-- Pohyb nahoru/dolů
+	if keysDown["Enum.KeyCode.Space"] then
+		cam.CFrame *= CFrame.new(0, currentSpeed, 0)
+	end
+	if keysDown["Enum.KeyCode.Q"] or keysDown["Enum.KeyCode.LeftControl"] then
+		cam.CFrame *= CFrame.new(0, -currentSpeed, 0)
 	end
 end
 
 RS.RenderStepped:Connect(renderStepped)
-
-local validKeys = {
-	"Enum.KeyCode.W",
-	"Enum.KeyCode.A",
-	"Enum.KeyCode.S",
-	"Enum.KeyCode.D"
-}
 
 UIS.InputBegan:Connect(function(Input)
 	-- TOGGLE freecam na O
@@ -340,10 +310,16 @@ UIS.InputBegan:Connect(function(Input)
 		toggleFreecam()
 	end
 
-	for i, key in pairs(validKeys) do
+	-- Klávesy pro pohyb
+	for i, key in pairs(extendedKeys) do
 		if key == tostring(Input.KeyCode) then
 			keysDown[key] = true
 		end
+	end
+
+	-- Speed boost (E)
+	if Input.KeyCode == Enum.KeyCode.E then
+		currentSpeed = baseSpeed * 3
 	end
 
 	if not freecamEnabled then return end
@@ -361,10 +337,16 @@ UIS.InputBegan:Connect(function(Input)
 end)
 
 UIS.InputEnded:Connect(function(Input)
+	-- Klávesy pro pohyb
 	for key, v in pairs(keysDown) do
 		if key == tostring(Input.KeyCode) then
 			keysDown[key] = false
 		end
+	end
+
+	-- Reset speed boost
+	if Input.KeyCode == Enum.KeyCode.E then
+		currentSpeed = baseSpeed
 	end
 
 	if not freecamEnabled then return end
@@ -381,6 +363,8 @@ UIS.InputEnded:Connect(function(Input)
 			keysDown["Enum.KeyCode.A"] = false
 			keysDown["Enum.KeyCode.S"] = false
 			keysDown["Enum.KeyCode.D"] = false
+			keysDown["Enum.KeyCode.Space"] = false
+			keysDown["Enum.KeyCode.Q"] = false
 		end
 	end
 end)
@@ -390,6 +374,7 @@ UIS.TouchMoved:Connect(function(input)
 
 	if touchPos then
 		if input.Position.X < cam.ViewportSize.X / 2 then
+			-- Pohyb vpřed/vzad
 			if input.Position.Y < touchPos.Y then
 				keysDown["Enum.KeyCode.W"] = true
 				keysDown["Enum.KeyCode.S"] = false
@@ -398,6 +383,7 @@ UIS.TouchMoved:Connect(function(input)
 				keysDown["Enum.KeyCode.S"] = true
 			end
 
+			-- Pohyb do stran
 			if input.Position.X < (touchPos.X - 15) then
 				keysDown["Enum.KeyCode.A"] = true
 				keysDown["Enum.KeyCode.D"] = false
@@ -427,4 +413,9 @@ player.CharacterAdded:Connect(function(newChar)
     end
 end)
 
-print("✅ Sima FreeCam loaded!")
+-- Inicializace statusu
+updateStatus()
+
+print("✅ Sima FreeCam loaded with Voidware GUI!")
+print("🎯 Press O key to toggle FreeCam")
+print("❌ Click X to close GUI")
