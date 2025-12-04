@@ -99,7 +99,7 @@ local InfoText = Instance.new("TextLabel")
 InfoText.Size = UDim2.new(1, -20, 1, -40)
 InfoText.Position = UDim2.new(0, 10, 0, 35)
 InfoText.BackgroundTransparency = 1
-InfoText.Text = "Sima FreeCam v1.0\n\n🚀 How to Use:\nPress O key to toggle FreeCam\n\n🎮 Controls:\n• WASD - Move camera\n• Right Click - Look around\n• Space - Move up\n• Q or Ctrl - Move down\n• E - Speed boost (hold)\n\n📱 Mobile Controls:\n• Right side - Look around (touch)\n• Left side - Move (touch & drag)\n\n🔧 Features:\n• Character movement locked\n• Smooth camera movement\n• Mobile touch support"
+InfoText.Text = "Sima FreeCam v1.0\n\n🚀 How to Use:\nPress O key to toggle FreeCam\n\n🎮 Controls:\n• WASD - Move camera\n• Right Click - Look around\n• Space - Move up\n• Q or Ctrl - Move down\n• E - Speed boost (hold)\n\n📱 Mobile Controls:\n• Right side - Look around (touch)\n• Left side - Move (touch & drag)\n\n💡 Tip: Press O anytime to toggle!"
 InfoText.TextColor3 = VOIDWARE_COLORS.Text
 InfoText.Font = Enum.Font.Gotham
 InfoText.TextSize = 13
@@ -243,9 +243,10 @@ local function toggleFreecam()
 	end
 end
 
-local speed = 3
-local sens = 0.3
-local baseSpeed = speed / 10
+-- ZPOMALENÁ RYCHLOST
+local speed = 2.25  -- Změněno z 3 na 1.5 (2x pomalejší)
+local sens = 0.25   -- Mírně snížená citlivost
+local baseSpeed = speed / 10  -- Změněno z /10 na /20 (2x pomalejší)
 local currentSpeed = baseSpeed
 
 if onMobile then sens *= 2 end
@@ -280,7 +281,7 @@ local function renderStepped()
 		UIS.MouseBehavior = Enum.MouseBehavior.Default
 	end
 
-	-- Pohyb s aktuální rychlostí
+	-- Pohyb s aktuální ZPOMALENOU rychlostí
 	if keysDown["Enum.KeyCode.W"] then
 		cam.CFrame *= CFrame.new(0, 0, -currentSpeed)
 	end
@@ -293,12 +294,12 @@ local function renderStepped()
 	if keysDown["Enum.KeyCode.D"] then
 		cam.CFrame *= CFrame.new(currentSpeed, 0, 0)
 	end
-	-- Pohyb nahoru/dolů
+	-- Pohyb nahoru/dolů (také zpomalený)
 	if keysDown["Enum.KeyCode.Space"] then
-		cam.CFrame *= CFrame.new(0, currentSpeed, 0)
+		cam.CFrame *= CFrame.new(0, currentSpeed * 0.8, 0)  -- Vertikální pohyb ještě pomalejší
 	end
 	if keysDown["Enum.KeyCode.Q"] or keysDown["Enum.KeyCode.LeftControl"] then
-		cam.CFrame *= CFrame.new(0, -currentSpeed, 0)
+		cam.CFrame *= CFrame.new(0, -currentSpeed * 0.8, 0)  -- Vertikální pohyb ještě pomalejší
 	end
 end
 
@@ -317,9 +318,9 @@ UIS.InputBegan:Connect(function(Input)
 		end
 	end
 
-	-- Speed boost (E)
+	-- Speed boost (E) - také zpomalený
 	if Input.KeyCode == Enum.KeyCode.E then
-		currentSpeed = baseSpeed * 3
+		currentSpeed = baseSpeed * 2  -- Změněno z *3 na *2 (menší boost)
 	end
 
 	if not freecamEnabled then return end
@@ -419,4 +420,3 @@ updateStatus()
 print("✅ Sima FreeCam loaded with Voidware GUI!")
 print("🎯 Press O key to toggle FreeCam")
 print("❌ Click X to close GUI")
-
